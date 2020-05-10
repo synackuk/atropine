@@ -3,7 +3,7 @@ CC = $(CROSS)gcc
 RM = rm
 BASE_DIR = ./
 OBJECTS = display.o
-CFLAGS = -Wall -W -pedantic -Wno-long-long -Os -fpie -march=armv7-a -I.
+CFLAGS = -Wall -W -pedantic -Wno-long-long -Os -fpie -fcall-used-r9 -march=armv7-a -I.
 
 
 %.o: $(BASE_DIR)%.c

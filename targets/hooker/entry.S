@@ -20,21 +20,7 @@ reset:
 	ldr r7, =#MAGIC_OFFSET
 	ldr	r5, [r7]
 	cmp	r5, r1
-	beq zero_bss @ If the iboot magic has been modified we can call the main function
-	mov	r5, pc @ Otherwise find the load address
-	lsr	r5, #24
-	lsl r5, #24
-	ldr r6, =TARGET_LOADADDR_OFFSET
-	add r1, r5, r6 @ And add a specified offset so that the payload survives other files being uploaded to the buffer
-	mov r0, r5
-	b relocate @ relocate(loadaddr, loadaddr + LOADADDRESS_OFFSET)
-
-zero_bss:
-	ldr	r1, =edata
-	ldr	r2, =end
-	mov	r3, #0
-	cmp r2, #0
-	beq ready
+	beq ready @ If the iboot magic has been modified we can call the main function
 
 zero_bss_loop:
 	cmp	r1, r2
@@ -44,6 +30,14 @@ zero_bss_loop:
 	mcr	p15, 0, r3, c7, c5, 0
 	dsb
 	isb
+
+	mov	r5, pc @ Otherwise find the load address
+	lsr	r5, #24
+	lsl r5, #24
+	ldr r6, =TARGET_LOADADDR_OFFSET
+	add r1, r5, r6 @ And add a specified offset so that the payload survives other files being uploaded to the buffer
+	mov r0, r5
+	b relocate @ relocate(loadaddr, loadaddr + LOADADDRESS_OFFSET)
 
 ready:
 	ldr	r0, [sp, #0x0]

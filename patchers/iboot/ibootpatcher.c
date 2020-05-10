@@ -50,7 +50,7 @@ int patch_iboot(char* address) {
 	memset(&iboot_in, 0, sizeof(iboot_in));
 
 	iboot_in.buf = address;
-	iboot_in.len = 0xF00000;
+	iboot_in.len = 0x60000;
 
 	const char* iboot_vers_str = (char*)((uintptr_t)iboot_in.buf + IBOOT_VERS_STR_OFFSET);
 
@@ -59,20 +59,35 @@ int patch_iboot(char* address) {
 		return -1;
 	}
 
-	
 	/* Check to see if the loader has a kernel load routine before trying to apply custom boot args + debug-enabled override. */
 	if(has_kernel_load(&iboot_in)) {
 		ret = patch_debug_enabled(&iboot_in);
 		if(ret != 0) {
 			return -1;
 		}
-		patch_ticket_check(&iboot_in); // No return check as loader may not have a ticket check
+		if(has_ticket_check(&iboot_in)) {
+			patch_ticket_check(&iboot_in); // No return check as loader may not have a ticket check (if old enough.)
+			ret = patch_boot_args(&iboot_in, "-v rd=md0");
+			if(ret != 0) {
+				return -1;
+			}
+		}
+		else {
+			ret = patch_boot_args(&iboot_in, "-v");
+			if(ret != 0) {
+				return -1;
+			}
+		}
 	}
 	ret = patch_rsa_check(&iboot_in);
 	if(ret != 0) {
 		return -1;
 	}
 	ret = patch_next_stage(&iboot_in);
+	if(ret != 0) {
+		return -1;
+	}
+	ret = patch_go(&iboot_in);
 	if(ret != 0) {
 		return -1;
 	}

@@ -47,10 +47,12 @@ void* find_last_LDR_rd(uintptr_t start, size_t len, const uint8_t rd) {
 
 void* find_next_bl_insn_to(struct iboot_img* iboot_in, uint32_t addr) {
 	for(size_t i = 0; i < iboot_in->len - sizeof(uint32_t); i++) {
-		void* possible_bl = resolve_bl32((void*)((uintptr_t)iboot_in->buf + i));
-		uint32_t resolved = (uintptr_t) GET_IBOOT_FILE_OFFSET(iboot_in, possible_bl);
-		if(resolved == addr) {
-			return (void*) ((uintptr_t)iboot_in->buf + i);
+		if((*(uint32_t*)((uintptr_t)iboot_in->buf + i) & 0xD000F800) == 0xD000F000) {
+			void* possible_bl = resolve_bl32((void*)((uintptr_t)iboot_in->buf + i));
+			uint32_t resolved = (uintptr_t) GET_IBOOT_FILE_OFFSET(iboot_in, possible_bl);
+			if(resolved == addr) {
+				return (void*) ((uintptr_t)iboot_in->buf + i);
+			}
 		}
 	}
 	return NULL;
@@ -122,6 +124,15 @@ bool has_recovery_console(struct iboot_img* iboot_in) {
 	void* entering_recovery_str = memstr(iboot_in->buf, iboot_in->len, ENTERING_RECOVERY_CONSOLE);
 
 	return (bool) (entering_recovery_str != NULL);
+}
+
+bool has_ticket_check(struct iboot_img* iboot_in) {
+	void* product_str = (char*)((uintptr_t)iboot_in->buf + 0x200);
+	if(!strncmp(product_str, "iBEC", 4)) {
+		return true;
+	}
+
+	return false;
 }
 
 void* iboot_memmem(struct iboot_img* iboot_in, void* pat) {

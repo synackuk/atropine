@@ -36,7 +36,5 @@ void xnu_boot(int should_patch, char* bootargs) {
 			panic("Failed to patch kernel\n");
 		} 
 	}
-	disable_irq();
-	clear_icache();
 	jumpto(xnu_entry, xnu_args);
 }

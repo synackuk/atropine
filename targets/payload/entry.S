@@ -12,9 +12,6 @@ reset:
 zero_bss:
 	ldr	r1, =edata
 	ldr	r2, =end
-	mov	r3, #0
-	cmp r2, #0
-	beq ready
 
 zero_bss_loop:
 	cmp	r1, r2
@@ -27,4 +24,5 @@ zero_bss_loop:
 
 
 ready:
+	bl enable_unaligned_access
 	b main

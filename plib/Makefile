@@ -4,9 +4,9 @@ AR = $(CROSS)ar
 RM = rm
 BASE_DIR = ./
 BUILD_DIR = bin
-OBJECTS = atoi.o div.o memcmp.o memmem.o memmove.o memset.o strcmp.o strcpy.o strncat.o strcat.o strlen.o ultoa.o printf.o panic.o putc.o cache.o cpu.o
+OBJECTS = atoi.o div.o memcmp.o memmem.o memmove.o memset.o strcmp.o strncmp.o strcpy.o strncat.o strcat.o strlen.o ultoa.o printf.o panic.o putc.o cache.o cpu.o
 OBJS = $(patsubst %,$(BUILD_DIR)/%,$(OBJECTS))
-CFLAGS = -Wall -W -pedantic -Wno-long-long -Os -fpie -march=armv7-a -I.
+CFLAGS = -Wall -W -pedantic -Wno-long-long -Os -fpie -fcall-used-r9 -march=armv7-a -I.
 
 $(BUILD_DIR)/%.o: $(BASE_DIR)%.c
 	@echo CC -c $(<) -o $(@)

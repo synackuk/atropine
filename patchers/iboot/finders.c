@@ -42,14 +42,11 @@ void* find_bl_verify_shsh_5_6_7(struct iboot_img* iboot_in) {
 		return 0;
 	}
 
-
 	/* Resolve the BL verify_shsh routine from found instruction... */
 	void* bl_verify_shsh = find_bl_verify_shsh_insn(iboot_in, movw);
 	if(!bl_verify_shsh) {
 		return 0;
 	}
-
-
 
 	return bl_verify_shsh;
 }

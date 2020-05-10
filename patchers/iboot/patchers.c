@@ -230,81 +230,56 @@ int patch_ticket_check(struct iboot_img* iboot_in) {
 	return 0;
 }
 
-
-static void* find_jumpto(struct iboot_img* iboot_in) {
-	if(has_kernel_load(iboot_in)) {
-		/* Find the pre-defined boot-args from iBoot "rd=md0 ..." */
-		void* default_boot_args_str_loc = memstr(iboot_in->buf, iboot_in->len, "jumping into image at");
-		if(!default_boot_args_str_loc) {
-			return NULL;
-		}
-	
-		/* Find the boot-args string xref within the kernel load routine. */
-		void* default_boot_args_xref = iboot_memmem(iboot_in, default_boot_args_str_loc);
-		if(!default_boot_args_xref) {
-			return NULL;
-		}
-		uintptr_t* go_cmd_jump = ldr_to(default_boot_args_xref);
-		if(!go_cmd_jump) {
-			return NULL;
-		}
-		uintptr_t* go_bl_1 = bl_search_down(go_cmd_jump, 8);
-		if(!go_bl_1) {
-			return NULL;
-		}
-		uintptr_t* jumpto_bl = bl_search_down((char *)go_bl_1 + 4, 20);
-		if (!jumpto_bl) {
-			jumpto_bl = bw_search_down((char *)go_bl_1 + 4, 24);
-			if (!jumpto_bl) {
-				return NULL;
-			}
-		}
-		uintptr_t jumpto_addr = (uintptr_t)resolve_bl32(jumpto_bl);
-		if(!jumpto_addr) {
-			return NULL;
-		}
-		jumpto_addr &= ~1;
-		return (void*)jumpto_addr;
+int patch_go(struct iboot_img* iboot_in) {
+	int os_vers = get_os_version(iboot_in);
+	if(os_vers < 7) {
+		return 0;
 	}
-	else {
-		/* Find the pre-defined boot-args from iBoot "rd=md0 ..." */
-		void* default_boot_args_str_loc = memstr(iboot_in->buf, iboot_in->len, "executing image...\n");
-		if(!default_boot_args_str_loc) {
-			return NULL;
-		}
-	
-		/* Find the boot-args string xref within the kernel load routine. */
-		void* default_boot_args_xref = iboot_memmem(iboot_in, default_boot_args_str_loc);
-		if(!default_boot_args_xref) {
-			return NULL;
-		}
-		uintptr_t* go_cmd_jump = ldr_to(default_boot_args_xref);
-		if(!go_cmd_jump) {
-			return NULL;
-		}
-		uintptr_t* go_bl_1 = bl_search_down(go_cmd_jump, 8);
-		if(!go_bl_1) {
-			return NULL;
-		}
-		uintptr_t* jumpto_bl = bl_search_down((char *)go_bl_1 + 4, 0x20);
-		if (!jumpto_bl) {
-			jumpto_bl = bw_search_down((char *)go_bl_1 + 4, 24);
-			if (!jumpto_bl) {
-				return NULL;
-			}
-		}
-		uintptr_t jumpto_addr = (uintptr_t)resolve_bl32(jumpto_bl);
-		if(!jumpto_addr) {
-			return NULL;
-		}
-		jumpto_addr &= ~1;
-		return (void*)jumpto_addr;
+	char* go_allowed_str = memstr(iboot_in->buf, iboot_in->len, "cebilefctmbrtlhptreprmmh");
+	if(!go_allowed_str) {
+		return -1;
 	}
+	strcpy(go_allowed_str, "cebitobixobitlhptreprmmh");
+	return 0;
 }
 
+static void* find_jumpto(struct iboot_img* iboot_in) {
+	void* jumping_loc = memstr(iboot_in->buf, iboot_in->len, "jumping into image at");
+	if(!jumping_loc) {
+		return NULL;
+	}
+	
+	void* jumping_xref = iboot_memmem(iboot_in, jumping_loc);
+	if(!jumping_xref) {
+		return NULL;
+	}
+	uintptr_t* go_cmd_jump = ldr_to(jumping_xref);
+	if(!go_cmd_jump) {
+		return NULL;
+	}
+	uintptr_t* go_bl_1 = bl_search_down(go_cmd_jump, 8);
+	if(!go_bl_1) {
+		return NULL;
+	}
+	uintptr_t* jumpto_bl = bl_search_down((char *)go_bl_1 + 4, 20);
+	if (!jumpto_bl) {
+		jumpto_bl = bw_search_down((char *)go_bl_1 + 4, 24);
+		if (!jumpto_bl) {
+			return NULL;
+		}
+	}
+	uintptr_t jumpto_addr = (uintptr_t)resolve_bl32(jumpto_bl);
+	if(!jumpto_addr) {
+		return NULL;
+	}
+	jumpto_addr &= ~1;
+	return (void*)jumpto_addr;
+}
+
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
 
 typedef void (*jumpto_t)(int boot_type, void* jump_address, void* arg) __attribute__((noreturn));
-
 
 static void* jumpto_func = NULL;
 
@@ -337,10 +312,5 @@ int patch_next_stage(struct iboot_img* iboot_in) {
 	return 0;
 }
 
-
-
-
-
-
-
+#pragma GCC pop_options
 

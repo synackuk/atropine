@@ -6,11 +6,6 @@
 #define GET_ENV_SEARCH "display-color-space"
 #define GET_ENV_UINT_SEARCH "boot-partition"
 #define CMD_PTR_SEARCH "\0ticket"
-#define JUMPTO_SEARCH "jumping into image at"
-#define AES_CRYPTO_CMD_SEARCH "aes_crypto_cmd"
-#define IMAGE_LIST_SEARCH "image %p: bdev %p type %c%c%c%c offset 0x%llx"
-#define VERSION_OFFSET 0x280 + 6
-#define SET_ENV_UINT_SEARCH "loadaddr"
 #define FRAMEBUFFER_SEARCH "framebuffer"
 #define DISPLAY_TIMING_SEARCH "display-timing"
 #define LOADADDR_SEARCH "loadaddr"
@@ -39,10 +34,6 @@ static void* pattern_search(const void* addr, int len, int pattern, int mask, in
 static void* bl_search_down(const void* start_addr, int len) {
 	/* BL pattern is xx Fx xx F8+ */
 	return pattern_search(start_addr, len, 0xD000F000, 0xD000F800, 2);
-}
-
-static void* bw_search_down(const void* start_addr, int len) {
-	return pattern_search(start_addr, len, 0x9000F000, 0xD000F800, 2);
 }
 
 static void* ldr_search_up(const void* start_addr, int len) {
@@ -88,12 +79,6 @@ static void* ldr_to(const void* loc) {
 		}
 	}
 	return NULL;
-}
-
-static void* push_lr_search_up(const void* start_addr, int len) {
-	/* F0 B5 <-- PUSH LR */
-	/* F0 BD <-- POP PC */
-	return pattern_search(start_addr, len, 0x0000B580, 0x0000FF80, -2);
 }
 
 static void* push_r4_r5_r7_lr_search_up(const void* start_addr, int len) {
@@ -258,66 +243,4 @@ uint32_t find_display_height() {
 uintptr_t* find_cmd_ptr() {
 	uintptr_t* cmd_ptr = (uintptr_t*)find_cmd(CMD_PTR_SEARCH, sizeof(CMD_PTR_SEARCH));
 	return cmd_ptr;
-}
-
-jumpto_t find_jumpto() {
-	uintptr_t* go_cmd_jump = find_next_LDR_insn_with_string(JUMPTO_SEARCH, strlen(JUMPTO_SEARCH));
-	if(!go_cmd_jump) {
-		return 0;
-	}
-	uintptr_t* go_bl_1 = bl_search_down(go_cmd_jump, 8);
-	if(!go_bl_1) {
-		return 0;
-	}
-	uintptr_t* jumto_bl = bl_search_down((char *)go_bl_1 + 4, 20);
-	if (!jumto_bl) {
-		jumto_bl = bw_search_down((char *)go_bl_1 + 4, 24);
-		if (!jumto_bl) {
-			return 0;
-		}
-	}
-	uintptr_t* jumpto_addr = resolve_bl32(jumto_bl);
-	if(!go_bl_1) {
-		return 0;
-	}
-	return (jumpto_t)((uintptr_t)jumpto_addr);
-}
-
-aes_crypto_cmd_t find_aes_crypto_cmd() {
-	uintptr_t* ref = xref(AES_CRYPTO_CMD_SEARCH, strlen(AES_CRYPTO_CMD_SEARCH));
-	if(!ref) {
-		return 0;
-	}
-	uintptr_t* func = push_lr_search_up(ref, 0x200);
-	if(!func) {
-		return 0;
-	}
-	return (aes_crypto_cmd_t)((uintptr_t)func | 1);
-}
-
-void* find_image_list() {
-	uintptr_t* image_list_ref = xref(IMAGE_LIST_SEARCH, strlen(IMAGE_LIST_SEARCH));
-	if (!image_list_ref) {
-		return 0;
-	}
-	return (((void **)image_list_ref)[-1]);
-}
-
-int find_version() {
-	return atoi((char *)base_address + VERSION_OFFSET);
-}
-set_env_uint_t find_set_env_uint() {
-	uintptr_t* loadaddr_ptr = find_next_LDR_insn_with_string(SET_ENV_UINT_SEARCH, strlen(SET_ENV_UINT_SEARCH));
-	if(!loadaddr_ptr) {
-		return 0;
-	}
-	uintptr_t* func_ptr = bl_search_down(loadaddr_ptr, 0x20);
-	if(!func_ptr) {
-		return 0;
-	}
-	uintptr_t* func = resolve_bl32(func_ptr);
-	if(!func) {
-		return 0;
-	}
-	return (set_env_uint_t)((uintptr_t)func);
 }

@@ -6,7 +6,6 @@
 static void* iboot_entry;
 
 int iboot_init(boot_args* args) {
-	enable_unaligned_access();
 	iboot_entry = args;
 	return 0;
 }
@@ -19,6 +18,5 @@ void iboot_boot(int should_patch) {
 			panic("Failed to patch iBoot");
 		}
 	}
-	disable_unaligned_access();
 	jumpto(iboot_entry, NULL);
 }

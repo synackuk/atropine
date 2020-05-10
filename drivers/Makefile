@@ -3,7 +3,7 @@ CC = $(CROSS)gcc
 AR = $(CROSS)ar
 RM = rm
 OBJS = display/*.o
-CFLAGS = -Wall -W -pedantic -Wno-long-long -Os -fpie -march=armv7-a -I.
+CFLAGS = -Wall -W -pedantic -Wno-long-long -Os -fpie -fcall-used-r9 -march=armv7-a -I.
 
 .PHONY: display
 all: libdrivers.a

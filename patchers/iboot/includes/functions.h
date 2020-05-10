@@ -46,6 +46,7 @@ uint16_t get_MOVW_val(struct arm32_thumb_MOVW* movw);
 int get_os_version(struct iboot_img* iboot_in);
 bool has_kernel_load(struct iboot_img* iboot_in);
 bool has_recovery_console(struct iboot_img* iboot_in);
+bool has_ticket_check(struct iboot_img* iboot_in);
 bool is_BW_insn(void* offset);
 bool is_LDRW_insn(void* offset);
 bool is_MOVW_insn(void* offset);
