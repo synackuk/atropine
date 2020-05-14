@@ -13,7 +13,7 @@ int iboot_init(boot_args* args) {
 void iboot_boot(int should_patch) {
 	int ret = 0;
 	if(should_patch) {
-		ret = patch_iboot(iboot_entry);
+		ret = patch_iboot(iboot_entry, 0);
 		if(ret != 0) {
 			panic("Failed to patch iBoot");
 		}

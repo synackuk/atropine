@@ -9,6 +9,9 @@
 #define FRAMEBUFFER_SEARCH "framebuffer"
 #define DISPLAY_TIMING_SEARCH "display-timing"
 #define LOADADDR_SEARCH "loadaddr"
+#define SET_ENV_UINT_SEARCH "loadaddr"
+#define VERSION_OFFSET 0x280 + 6
+#define IMAGE_LIST_SEARCH "image %p: bdev %p type %c%c%c%c offset 0x%llx"
 
 /* much of the code below was snarfed from iDove v3 and iBex */
 
@@ -243,4 +246,30 @@ uint32_t find_display_height() {
 uintptr_t* find_cmd_ptr() {
 	uintptr_t* cmd_ptr = (uintptr_t*)find_cmd(CMD_PTR_SEARCH, sizeof(CMD_PTR_SEARCH));
 	return cmd_ptr;
+}
+void* find_image_list() {
+	uintptr_t* image_list_ref = xref(IMAGE_LIST_SEARCH, strlen(IMAGE_LIST_SEARCH));
+	if (!image_list_ref) {
+		return 0;
+	}
+	return (((void **)image_list_ref)[-1]);
+}
+
+int find_version() {
+	return atoi((char *)base_address + VERSION_OFFSET);
+}
+set_env_uint_t find_set_env_uint() {
+	uintptr_t* loadaddr_ptr = find_next_LDR_insn_with_string(SET_ENV_UINT_SEARCH, strlen(SET_ENV_UINT_SEARCH));
+	if(!loadaddr_ptr) {
+		return 0;
+	}
+	uintptr_t* func_ptr = bl_search_down(loadaddr_ptr, 0x20);
+	if(!func_ptr) {
+		return 0;
+	}
+	uintptr_t* func = resolve_bl32(func_ptr);
+	if(!func) {
+		return 0;
+	}
+	return (set_env_uint_t)((uintptr_t)func);
 }

@@ -11,6 +11,9 @@ get_env_uint_t _get_env_uint;
 uintptr_t* framebuffer_address;
 uint32_t display_width;
 uint32_t display_height;
+void* image_list;
+int version;
+set_env_uint_t _set_env_uint;
 
 int constants_init() {
 	base_address = BASE_ADDRESS;
@@ -47,6 +50,20 @@ int constants_init() {
 	}
 	display_height = DISPLAY_HEIGHT;
 	if(!display_height) {
+		return -1;
+	}
+	image_list = IMAGE_LIST_ADDRESS;
+	if(!image_list) {
+		return -1;
+	}
+
+	version = VERSION;
+	if(!version) {
+		return -1;
+	}
+
+	_set_env_uint = SET_ENV_UINT_ADDRESS;
+	if(!_set_env_uint) {
 		return -1;
 	}
 	return 0;

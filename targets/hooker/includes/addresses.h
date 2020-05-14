@@ -10,5 +10,8 @@
 #define FRAMEBUFFER_ADDRESS find_framebuffer_address()
 #define DISPLAY_WIDTH find_display_width()
 #define DISPLAY_HEIGHT find_display_height()
+#define IMAGE_LIST_ADDRESS find_image_list()
+#define VERSION find_version()
+#define SET_ENV_UINT_ADDRESS find_set_env_uint()
 
 #endif

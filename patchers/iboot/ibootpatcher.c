@@ -43,7 +43,7 @@
 #include <includes/iboot_const.h>
 #include <includes/patchers.h>
 
-int patch_iboot(char* address) {
+int patch_iboot(char* address, int do_patch_go) {
 	int ret = 0;
 	struct iboot_img iboot_in;
 
@@ -67,10 +67,6 @@ int patch_iboot(char* address) {
 		}
 		if(has_ticket_check(&iboot_in)) {
 			patch_ticket_check(&iboot_in); // No return check as loader may not have a ticket check (if old enough.)
-			ret = patch_boot_args(&iboot_in, "-v rd=md0");
-			if(ret != 0) {
-				return -1;
-			}
 		}
 		else {
 			ret = patch_boot_args(&iboot_in, "-v");
@@ -87,9 +83,11 @@ int patch_iboot(char* address) {
 	if(ret != 0) {
 		return -1;
 	}
-	ret = patch_go(&iboot_in);
-	if(ret != 0) {
-		return -1;
+	if(do_patch_go) {
+		ret = patch_go(&iboot_in);
+		if(ret != 0) {
+			return -1;
+		}
 	}
 	return 0;
 }

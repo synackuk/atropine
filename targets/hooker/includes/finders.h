@@ -15,5 +15,8 @@ get_env_uint_t find_get_env_uint();
 uintptr_t* find_framebuffer_address();
 uint32_t find_display_width();
 uint32_t find_display_height();
+void* find_image_list();
+int find_version();
+set_env_uint_t find_set_env_uint();
 
 #endif
