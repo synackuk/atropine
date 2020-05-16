@@ -1,10 +1,8 @@
-name: Build
+name: Create Release
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+  release:
+    types: [created]
 
 jobs:
   build:
@@ -25,3 +23,9 @@ jobs:
       with:
         name: hooker
         path: targets/hooker/hooker
+    - name: Add to release
+      uses: skx/github-action-publish-binaries@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: '*'
