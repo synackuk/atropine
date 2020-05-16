@@ -26,10 +26,7 @@
 #define ENTERING_RECOVERY_CONSOLE "Entering recovery mode, starting command prompt"
 #define KERNELCACHE_PREP_STRING "__PAGEZERO"
 
-#ifndef memmem
-#define memmem _memmem
-void* _memmem(const void* mem, int size, const void* pat, int size2);
-#endif
+void *memmem(const void* haystack, size_t hlen, const void* needle, size_t nlen);
 
 void* bl_search_down(const void* start_addr, int len);
 void* bl_search_up(const void* start_addr, int len);

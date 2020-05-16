@@ -247,21 +247,6 @@ void* ldr_to(const void* loc) {
 	return NULL;
 }
 
-void* _memmem(const void* mem, int size, const void* pat, int size2) {
-	char* cmem = (char*)mem;
-	const char* cpat = (const char*)pat;
-	for (int i = 0; i < size; i++) {
-		for (int j = 0; j < size2; ++j) {
-			if (cmem[i + j] != cpat[j])
-				goto next;
-		}
-		return (void*)(cmem + i);
-	next:
-		continue;
-	}
-	return NULL;
-}
-
 void* memstr(const void* mem, size_t size, const char* str) {
 	return (void*) memmem(mem, size, str, strlen(str));
 }
