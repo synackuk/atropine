@@ -1,0 +1,27 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Collect dependencies
+      uses: fiam/arm-none-eabi-gcc@v1
+      with:
+        release: '9-2019-q4'
+    - name: Build
+      run: make
+    - uses: actions/upload-artifact@v2
+      with:
+        name: atropine
+        path: targets/payload/atropine
+    - uses: actions/upload-artifact@v2
+      with:
+        name: hooker
+        path: targets/payload/hooker
