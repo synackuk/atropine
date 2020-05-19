@@ -40,12 +40,12 @@ jobs:
       uses: actions/download-artifact@v1
       with:
         name: atropine
-        path: atropine-payload
+        path: atropine
     - name: Download atropine hooker
       uses: actions/download-artifact@v1
       with:
         name: hooker
-        path: hooker-payload
+        path: hooker
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1.0.0
@@ -57,18 +57,16 @@ jobs:
         draft: false
         prerelease: false
     - name: Upload atropine
-      uses: svenstaro/upload-release-action@v1-release
+      uses: skx/github-action-publish-binaries@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: atropine-payload
-        asset_name: atropine
-        tag: ${{ env.BUILD_VERSION }}
-        overwrite: true
+        args: 'atropine'
+        releaseId: ${{ env.BUILD_VERSION }}
     - name: Upload atropine hooker
-      uses: svenstaro/upload-release-action@v1-release
+      uses: skx/github-action-publish-binaries@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: hooker-payload
-        asset_name: hooker
-        tag: ${{ env.BUILD_VERSION }}
-        overwrite: true
+        args: 'hooker'
+        releaseId: ${{ env.BUILD_VERSION }}
