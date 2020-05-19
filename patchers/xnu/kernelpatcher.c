@@ -11,10 +11,17 @@ void* find_kernel_entry(char* kernel) {
 
 int patch_kernel(char* kernel, uint32_t kernel_phys_base, uint32_t kernel_virt_base, char* boot_args) {
 	int ret = 0;
-
-	dprintf("Patching platform_binary... ");
-	ret = patch_platform_binary(kernel, kernel_phys_base, kernel_virt_base);
-	if(ret == 0) {
+	uint32_t version = get_version((void*)kernel);
+	if(!version) {
+		return -1;
+	}
+	if(version >= 0x00080000) {
+		dprintf("Patching platform_binary... ");
+		ret = patch_platform_binary(kernel, kernel_phys_base, kernel_virt_base);
+		if(ret != 0) {
+			dprintf("failed\n");
+			return -1;
+		}
 		dprintf("done\n");
 		dprintf("Patching mapforio... ");
 		//ret = patch_mapforio(kernel, kernel_phys_base, kernel_virt_base, boot_args);
@@ -22,9 +29,6 @@ int patch_kernel(char* kernel, uint32_t kernel_phys_base, uint32_t kernel_virt_b
 			dprintf("failed\n");
 			return -1;
 		}
-		dprintf("done\n");
-	}
-	else { // Pre-iOS 8 doesn't have platform binaries
 		dprintf("done\n");
 	}
 	dprintf("Patching tfp0... ");

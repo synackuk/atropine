@@ -17,11 +17,58 @@ jobs:
         release: '9-2019-q4'
     - name: Build
       run: make
-    - uses: actions/upload-artifact@v2
+    - name: Upload atropine
+      uses: actions/upload-artifact@v2
       with:
         name: atropine
         path: targets/payload/atropine
-    - uses: actions/upload-artifact@v2
+    - name: Upload atropine hooker
+      uses: actions/upload-artifact@v2
       with:
         name: hooker
         path: targets/hooker/hooker
+  release:
+    runs-on: macos-latest
+    steps:
+    - name: Set build version
+      run: |
+         echo "::set-env name=BUILD_VERSION::$(echo "$(git log -1 --pretty=format:"%H" | cut -c1-8)")"
+         echo "::set-env name=COMMIT_MSG::$(echo "$(git log -1 --pretty=%B)")"
+      shell: bash
+    - name: Download atropine
+      uses: actions/download-artifact@v1
+      with:
+        name: atropine
+        path: atropine
+    - name: Download atropine hooker
+      uses: actions/download-artifact@v1
+      with:
+        name: hooker
+        path: hooker
+    - name: Create Release
+      uses: actions/create-release@v1.0.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ env.BUILD_VERSION }}
+        release_name: Build ${{ env.COMMIT_MSG }}
+        draft: false
+        prerelease: false
+    - name: Upload atropine
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: atropine
+        asset_name: atropine
+        asset_content_type: application/octet-stream
+    - name: Upload atropine hooker
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: hooker
+        asset_name: hooker
+        asset_content_type: application/octet-stream
