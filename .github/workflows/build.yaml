@@ -28,6 +28,7 @@ jobs:
         name: hooker
         path: targets/hooker/hooker
   release:
+    - uses: actions/checkout@v2
     runs-on: ubuntu-latest
     needs: build
     steps:
