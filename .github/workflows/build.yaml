@@ -57,20 +57,18 @@ jobs:
         draft: false
         prerelease: false
     - name: Upload atropine
-      uses: actions/upload-release-asset@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: svenstaro/upload-release-action@v1-release
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: atropine-payload
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: atropine-payload
         asset_name: atropine
-        asset_content_type: application/octet-stream
+        tag: ${{ env.BUILD_VERSION }}
+        overwrite: true
     - name: Upload atropine hooker
-      uses: actions/upload-release-asset@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: svenstaro/upload-release-action@v1-release
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: hooker-payload
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: hooker-payload
         asset_name: hooker
-        asset_content_type: application/octet-stream
+        tag: ${{ env.BUILD_VERSION }}
+        overwrite: true
