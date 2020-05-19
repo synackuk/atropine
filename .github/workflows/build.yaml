@@ -39,12 +39,12 @@ jobs:
     - name: Download atropine
       uses: actions/download-artifact@v1
       with:
-        name: atropine
+        name: atropine-payload
         path: atropine
     - name: Download atropine hooker
       uses: actions/download-artifact@v1
       with:
-        name: hooker
+        name: hooker-payload
         path: hooker
     - name: Create Release
       id: create_release
@@ -62,7 +62,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: atropine
+        asset_path: atropine-payload
         asset_name: atropine
         asset_content_type: application/octet-stream
     - name: Upload atropine hooker
@@ -71,6 +71,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: hooker
+        asset_path: hooker-payload
         asset_name: hooker
         asset_content_type: application/octet-stream
