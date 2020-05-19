@@ -62,8 +62,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: atropine
-        asset_name: atropine-payload
+        asset_path: atropine-payload
+        asset_name: atropine
         asset_content_type: application/octet-stream
     - name: Upload atropine hooker
       uses: actions/upload-release-asset@v1.0.1
@@ -71,6 +71,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: hooker
-        asset_name: hooker-payload
+        asset_path: hooker-payload
+        asset_name: hooker
         asset_content_type: application/octet-stream
