@@ -57,16 +57,22 @@ jobs:
         draft: false
         prerelease: false
     - name: Upload atropine
-      uses: skx/github-action-publish-binaries@master
+      id: upload-release-asset-atropine
+      uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        args: 'atropine'
-        releaseId: ${{ env.BUILD_VERSION }} 
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./atropine
+          asset_name: atropine
+          asset_content_type: application/octet-stream
     - name: Upload atropine hooker
-      uses: skx/github-action-publish-binaries@master
+      id: upload-release-asset-hooker
+      uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        args: 'hooker'
-        releaseId: ${{ env.BUILD_VERSION }} 
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./hooker
+          asset_name: hooker
+          asset_content_type: application/octet-stream
