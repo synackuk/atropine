@@ -33,9 +33,8 @@ jobs:
     steps:
     - name: Set build version
       run: |
-         echo "::set-env name=BUILD_VERSION::$(echo "$(git log -1 --pretty=format:"%H" | cut -c1-8)")"
+         echo "::set-env name=BUILD_VERSION::$(echo "$(git log -1 --pretty=format:'%H' | cut -c1-8  | tr -d '\n')")"
          echo "::set-env name=COMMIT_MSG::$(echo "$(git log -1 --pretty=%B)")"
-      shell: bash
     - name: Download atropine
       uses: actions/download-artifact@v1
       with:
