@@ -2,6 +2,23 @@
 #include "includes/finders.h"
 #include "includes/functions.h"
 
+uint32_t* find_proc_enforce(uintptr_t phys_base, uintptr_t virt_base) {
+
+	uintptr_t* proc_enforce_description = memmem((void*)phys_base, KERNEL_LEN, "Enforce MAC policy on process operations", strlen("Enforce MAC policy on process operations"));
+	if(!proc_enforce_description) {
+		return NULL;
+	}
+	uintptr_t proc_enforce_description_address = PHYS_TO_VIRT(proc_enforce_description);
+	uintptr_t* proc_enforce_description_ptr = memmem((void*)phys_base, KERNEL_LEN, &proc_enforce_description_address, sizeof(uintptr_t));
+	if(!proc_enforce_description_ptr) {
+		return NULL;
+	}
+
+	uint32_t* proc_enforce_address = (uint32_t*)(proc_enforce_description_ptr - (5 * sizeof(uint32_t)));
+
+	return (uint32_t*)VIRT_TO_PHYS(*proc_enforce_address);
+}
+
 uint32_t* find_task_for_pid(char* address, uintptr_t phys_base, uintptr_t virt_base) {
 
 	int old = 0;

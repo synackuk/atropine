@@ -7,6 +7,7 @@
 #include "includes/mach.h"
 
 #define VIRT_TO_PHYS(x) (((uintptr_t)x - (uintptr_t)virt_base) + (uintptr_t)phys_base)
+#define PHYS_TO_VIRT(x) (((uintptr_t)x - (uintptr_t)phys_base) + (uintptr_t)virt_base)
 #define bzero(b,len) (memset((b), '\0', (len)), (void) 0)
 
 typedef int (*insn)(insn_t*);
