@@ -34,7 +34,7 @@ static int hooker_init() {
 	if(ret != 0) {
 		return -1;
 	}
-	ret = patch_iboot((char*)base_address, 1);
+	ret = patch_iboot((char*)base_address);
 	if(ret != 0) {
 		return -1;
 	}

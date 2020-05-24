@@ -248,30 +248,3 @@ uint32_t get_version(struct mach_header *mh) {
 	struct version_min_command* vers = (struct version_min_command*) find_load_command(mh, LC_VERSION_MIN_IPHONEOS);
 	return vers->version;
 }
-
-uint32_t find_kextbase(void *kernelcache) {
-    
-    struct mach_header *mh = kernelcache;
-    struct segment_command *sc = (void*)((uintptr_t)kernelcache+sizeof(struct mach_header));
-    
-    for (uint32_t i = 0; i < mh->ncmds; i++) {
-        
-        if (!strcmp(sc->segname, "__PRELINK_TEXT")) {
-            
-            uint32_t ret = (sc->vmaddr - sc->fileoff);
-            
-            return ret;
-        }
-        
-        uintptr_t next = (uintptr_t)sc->cmdsize + (uintptr_t)sc - (uintptr_t)kernelcache;
-        
-        if (next+(uintptr_t)kernelcache > mh->sizeofcmds+(uintptr_t)kernelcache) {
-            break;
-        }
-        
-        sc = (void*)((uintptr_t)kernelcache + next);
-        
-    }
-    
-    return 0;
-}

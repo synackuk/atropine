@@ -26,7 +26,7 @@
 
 #include <stdint.h>
 
-#define KERNEL_LEN 0xF00000
+#define KERNEL_LEN 0xF000000
 #define	LC_SEGMENT	0x1	/* segment of this file to be mapped */
 #define	LC_SYMTAB	0x2	/* link-edit stab symbol table info */
 #define	LC_UNIXTHREAD	0x5	/* unix thread (includes a stack) */

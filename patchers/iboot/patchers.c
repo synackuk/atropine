@@ -239,7 +239,7 @@ int patch_go(struct iboot_img* iboot_in) {
 	if(!go_allowed_str) {
 		return -1;
 	}
-	strcpy(go_allowed_str, "cebitobixobitlhptreprmmh");
+	memcpy(go_allowed_str, "cebitobixobitlhptreprmmh", 24);
 	return 0;
 }
 
@@ -286,7 +286,7 @@ static void* jumpto_func = NULL;
 static uint64_t original = 0;
 
 __attribute__((noreturn)) static void hooker(int flags, void* addr, void* arg) {
-	void* payload = (void*)(0x10000000 + 0x70000);
+	void* payload = (void*)(0x10000000);
 	memcpy(jumpto_func, &original, 8);
 	clear_icache();
 	jumpto_t jumpto_thmb = (jumpto_t)(((uintptr_t) jumpto_func) | 1);

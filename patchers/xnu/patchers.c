@@ -6,17 +6,6 @@
 #include "includes/finders.h"
 #include "includes/sbops.h"
 
-int patch_proc_enforce(uintptr_t phys_base, uintptr_t virt_base) {
-	uint32_t* proc_enforce = find_proc_enforce(phys_base, virt_base);
-	if(!proc_enforce) {
-		return -1;
-	}
-	*(uint32_t*)proc_enforce = 0;
-
-	return 0;
-
-}
-
 int patch_tfp0(char* address, uintptr_t phys_base, uintptr_t virt_base) {
 	uint32_t* task_for_pid = find_task_for_pid(address, phys_base, virt_base);
 

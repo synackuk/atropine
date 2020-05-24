@@ -18,7 +18,7 @@ static int load_command(int argc, command_args* argv) {
 
 static int load_payload_command(int argc, command_args* argv) {
 	size_t payload_len = get_env_uint("filesize");
-	uint32_t* payload = (uint32_t*)((uintptr_t)0x10000000 + 0x70000);
+	uint32_t* payload = (uint32_t*)((uintptr_t)0x10000000);
 	memcpy(payload, load_address, payload_len);
 	return 0;
 }

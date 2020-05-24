@@ -7,7 +7,6 @@
 #include "includes/mach.h"
 
 #define VIRT_TO_PHYS(x) (((uintptr_t)x - (uintptr_t)virt_base) + (uintptr_t)phys_base)
-#define PHYS_TO_VIRT(x) (((uintptr_t)x - (uintptr_t)phys_base) + (uintptr_t)virt_base)
 #define bzero(b,len) (memset((b), '\0', (len)), (void) 0)
 
 typedef int (*insn)(insn_t*);
@@ -34,6 +33,5 @@ struct load_command *find_load_command(struct mach_header *mh, uint32_t cmd);
 struct section *find_section(struct segment_command *seg, const char *name);
 void* find_sym(struct mach_header *mh, const char *name, uintptr_t phys_base, uintptr_t virt_base);
 uint32_t get_version(struct mach_header *mh);
-uint32_t find_kextbase(void *kernelcache);
 
 #endif
