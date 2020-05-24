@@ -6,7 +6,7 @@ BIN2C = bin2c
 BASE_DIR = ../../
 BUILD_DIR = bin
 TARGET_COMMIT = $(shell git log -1 --pretty=format:"%H" | cut -c1-8)
-CFLAGS = -Wall -W -pedantic -Wno-main -Wno-multichar -Wno-unused-parameter -Wno-long-long -Os -fpie -fcall-used-r9 -march=armv7-a -DTARGET_COMMIT='"$(TARGET_COMMIT)"' -I$(BASE_DIR)/includes -I$(BASE_DIR)/plib -I. -I$(BASE_DIR)/drivers -I$(BASE_DIR)/patchers -I./includes
+CFLAGS = -Wall -W -pedantic -Wno-main -Wno-multichar -Wno-unused-parameter -Wno-long-long -Os -fpie -fcall-used-r9 -ffreestanding -funsigned-char -fno-strict-aliasing -std=gnu11 -march=armv7-a -DTARGET_COMMIT='"$(TARGET_COMMIT)"' -I$(BASE_DIR)/includes -I$(BASE_DIR)/plib -I. -I$(BASE_DIR)/drivers -I$(BASE_DIR)/patchers -I./includes
 LDFLAGS = -nostdlib -Tscript.ld -L$(BASE_DIR)/plib -L$(BASE_DIR)/patchers -L$(BASE_DIR)/drivers
 LDLIBS = -lpatchers -lp -lgcc -ldrivers
 OBJECTS = main.o command.o constants.o finders.o menu_commands.o relocate.o image.o
