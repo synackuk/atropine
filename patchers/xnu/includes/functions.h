@@ -29,10 +29,15 @@ int insn_movt_imm(insn_t* i);
 int insn_is_mov_imm(insn_t* i);
 int insn_mov_imm_rd(insn_t* i);
 int insn_mov_imm_imm(insn_t* i);
+insn_t* find_literal_ref(uint8_t* kdata, size_t ksize, insn_t* insn, uintptr_t address);
 struct segment_command *find_segment(struct mach_header *mh, const char *segname);
 struct load_command *find_load_command(struct mach_header *mh, uint32_t cmd);
 struct section *find_section(struct segment_command *seg, const char *name);
 void* find_sym(struct mach_header *mh, const char *name, uintptr_t phys_base, uintptr_t virt_base);
 uint32_t get_version(struct mach_header *mh);
+
+// funcs from iBootpatcher
+
+void* ldr_to(const void* loc);
 
 #endif

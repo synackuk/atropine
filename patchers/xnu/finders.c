@@ -19,6 +19,23 @@ uint32_t* find_proc_enforce(uintptr_t phys_base, uintptr_t virt_base) {
 	return (uint32_t*)VIRT_TO_PHYS(*proc_enforce_address);
 }
 
+uintptr_t* find_mapforio_error(uintptr_t phys_base) {
+	uintptr_t* mapforio_str = memmem((void*)phys_base, KERNEL_LEN, "_mapForIO", sizeof("_mapForIO"));
+	if(!mapforio_str) {
+		return NULL;
+	}
+	insn_t* mapforio_ref = find_literal_ref((void*)phys_base, KERNEL_LEN, (insn_t*) phys_base, (uintptr_t)mapforio_str - (uintptr_t)phys_base);
+	if(!mapforio_ref) {
+		return NULL;
+	}
+	uint32_t error_code = 0xE00002C4;
+	uintptr_t* mapforio_error = memmem((void*)mapforio_ref, KERNEL_LEN, &error_code, sizeof(uint32_t));
+	if(!mapforio_error) {
+		return NULL;
+	}
+	return mapforio_error;
+}
+
 uint32_t* find_task_for_pid(char* address, uintptr_t phys_base, uintptr_t virt_base) {
 
 	int old = 0;

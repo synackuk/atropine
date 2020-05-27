@@ -178,6 +178,40 @@ int insn_mov_imm_imm(insn_t* i)
 		return 0;
 }
 
+insn_t* find_literal_ref(uint8_t* kdata, size_t ksize, insn_t* insn, uintptr_t address) {
+	insn_t* current_instruction = insn;
+	uint32_t value[16];
+	memset(value, 0, sizeof(value));
+
+	while((uintptr_t)current_instruction < (uintptr_t)(kdata + ksize)) {
+		if(insn_is_mov_imm(current_instruction)) {
+			value[insn_mov_imm_rd(current_instruction)] = insn_mov_imm_imm(current_instruction);
+		} 
+		else if(insn_is_ldr_literal(current_instruction)) {
+			uintptr_t literal_address  = (uintptr_t)kdata + ((((uintptr_t)current_instruction - (uintptr_t)kdata) + 4) & 0xFFFFFFFC) + insn_ldr_literal_imm(current_instruction);
+			if(literal_address >= (uintptr_t)kdata && (literal_address + 4) <= ((uintptr_t)kdata + ksize)) {
+				value[insn_ldr_literal_rt(current_instruction)] = *(uint32_t*)(literal_address);
+			}
+		} 
+		else if(insn_is_movt(current_instruction)) {
+			value[insn_movt_rd(current_instruction)] |= insn_movt_imm(current_instruction) << 16;
+		} 
+		else if(insn_is_add_reg(current_instruction)) {
+			int reg = insn_add_reg_rd(current_instruction);
+			if(insn_add_reg_rm(current_instruction) == 15 && insn_add_reg_rn(current_instruction) == reg) {
+				value[reg] += ((uintptr_t)current_instruction - (uintptr_t)kdata) + 4;
+				if(value[reg] == address) {
+					return current_instruction;
+				}
+			}
+		}
+
+		current_instruction += insn_is_32bit(current_instruction) ? 2 : 1;
+	}
+
+	return NULL;
+}
+
 struct segment_command *find_segment(struct mach_header *mh, const char *segname) {
 	struct load_command *lc;
 	struct segment_command *s, *fs = NULL;

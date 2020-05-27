@@ -8,6 +8,7 @@
 char* ultoa(unsigned long val, char* s, int radix);
 
 int patch_proc_enforce(uintptr_t phys_base, uintptr_t virt_base);
+int patch_mapforio(uintptr_t phys_base);
 int patch_tfp0(char* address, uintptr_t phys_base, uintptr_t virt_base);
 int patch_amfi(char* address, uintptr_t phys_base, uintptr_t virt_base);
 int patch_mount(char* address, uintptr_t phys_base, uintptr_t virt_base, char* boot_args);

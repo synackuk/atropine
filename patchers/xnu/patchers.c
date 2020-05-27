@@ -17,6 +17,29 @@ int patch_proc_enforce(uintptr_t phys_base, uintptr_t virt_base) {
 
 }
 
+int patch_mapforio(uintptr_t phys_base) {
+	uintptr_t* mapforio_error = find_mapforio_error(phys_base);
+	if(!mapforio_error) {
+		return -1;
+	}
+	insn_t* error_ldr;
+	while((error_ldr = ldr_to(mapforio_error))) {
+		insn_t* check = error_ldr;
+		if(insn_is_32bit(error_ldr)) {
+			check[0] = NOP;
+			check += 2;
+		}
+		*check = NOP;
+		check += 2;
+		if(insn_is_32bit(error_ldr)) {
+			check[0] = NOP;
+			check += 2;
+		}
+		*check = NOP;
+	}
+	return 0;
+}
+
 int patch_tfp0(char* address, uintptr_t phys_base, uintptr_t virt_base) {
 	uint32_t* task_for_pid = find_task_for_pid(address, phys_base, virt_base);
 

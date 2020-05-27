@@ -24,7 +24,7 @@ int patch_kernel(char* kernel, uint32_t kernel_phys_base, uint32_t kernel_virt_b
 		}
 		dprintf("done\n");
 		dprintf("Patching mapforio... ");
-		//ret = patch_mapforio(kernel, kernel_phys_base, kernel_virt_base, boot_args);
+		ret = patch_mapforio(kernel_phys_base);
 		if(ret != 0) {
 			dprintf("failed\n");
 			return -1;
