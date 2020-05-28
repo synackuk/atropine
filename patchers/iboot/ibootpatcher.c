@@ -73,7 +73,7 @@ int patch_iboot(char* address) {
 			patch_ticket_check(&iboot_in); // No return check as loader may not have a ticket check (if old enough.)
 		}
 		else {
-			ret = patch_boot_args(&iboot_in, "-v");
+			ret = patch_boot_args(&iboot_in, "-v serial=3");
 			if(ret != 0) {
 				return -1;
 			}

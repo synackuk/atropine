@@ -25,17 +25,14 @@ int patch_mapforio(uintptr_t phys_base) {
 	insn_t* error_ldr;
 	while((error_ldr = ldr_to(mapforio_error))) {
 		insn_t* check = error_ldr;
-		if(insn_is_32bit(error_ldr)) {
-			check[0] = NOP;
-			check += 2;
+		for(int i = 0; i < 3; i += 1) {
+			if(insn_is_32bit(check)) {
+				*check = NOP;
+				check = &check[1];
+			}
+			*check = NOP;
+			check = &check[1];
 		}
-		*check = NOP;
-		check += 2;
-		if(insn_is_32bit(error_ldr)) {
-			check[0] = NOP;
-			check += 2;
-		}
-		*check = NOP;
 	}
 	return 0;
 }
@@ -265,6 +262,7 @@ int patch_sandbox(char* address, uintptr_t phys_base, uintptr_t virt_base) {
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_proc_check_fork), 0x4);
 	}
 	else if(version >= 0x00090000 && version < 0x00090200) {
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_file_check_mmap), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_file_check_mmap), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_rename), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_access), 0x4);
