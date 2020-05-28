@@ -263,7 +263,6 @@ int patch_sandbox(char* address, uintptr_t phys_base, uintptr_t virt_base) {
 	}
 	else if(version >= 0x00090000 && version < 0x00090200) {
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_file_check_mmap), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_file_check_mmap), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_rename), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_access), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_chroot), 0x4);
