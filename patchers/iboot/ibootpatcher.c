@@ -66,14 +66,14 @@ int patch_iboot(char* address) {
 			return -1;
 		}
 		if(has_ticket_check(&iboot_in)) {
-			ret = patch_boot_args(&iboot_in, "-v rd=md0");
+			ret = patch_boot_args(&iboot_in, "-v rd=md0 amfi=0xff cs_enforcement_disable=1 serial=3");
 			if(ret != 0) {
 				return -1;
 			}
 			patch_ticket_check(&iboot_in); // No return check as loader may not have a ticket check (if old enough.)
 		}
 		else {
-			ret = patch_boot_args(&iboot_in, "-v");
+			ret = patch_boot_args(&iboot_in, "-v amfi=0xff cs_enforcement_disable=1 serial=3");
 			if(ret != 0) {
 				return -1;
 			}

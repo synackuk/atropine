@@ -23,6 +23,7 @@ int patch_kernel(char* kernel, uint32_t kernel_phys_base, uint32_t kernel_virt_b
 			return -1;
 		}
 		dprintf("done\n");
+		
 		dprintf("Patching mapforio... ");
 		ret = patch_mapforio(kernel_phys_base);
 		if(ret != 0) {
@@ -30,15 +31,15 @@ int patch_kernel(char* kernel, uint32_t kernel_phys_base, uint32_t kernel_virt_b
 			return -1;
 		}
 		dprintf("done\n");
-	}
 
-	dprintf("Patching proc_enforce... ");
-	ret = patch_proc_enforce(kernel_phys_base, kernel_virt_base);
-	if(ret != 0) {
-		dprintf("failed\n");
-		return -1;
+		dprintf("Patching entitlements... ");
+		ret = patch_entitlements(kernel, kernel_phys_base, kernel_virt_base);
+		if(ret != 0) {
+			dprintf("failed\n");
+			return -1;
+		}
+		dprintf("done\n");
 	}
-	dprintf("done\n");
 	
 	dprintf("Patching tfp0... ");
 	ret = patch_tfp0(kernel, kernel_phys_base, kernel_virt_base);

@@ -6,17 +6,6 @@
 #include "includes/finders.h"
 #include "includes/sbops.h"
 
-int patch_proc_enforce(uintptr_t phys_base, uintptr_t virt_base) {
-	uint32_t* proc_enforce = find_proc_enforce(phys_base, virt_base);
-	if(!proc_enforce) {
-		return -1;
-	}
-	*(uint32_t*)proc_enforce = 0;
-
-	return 0;
-
-}
-
 int patch_mapforio(uintptr_t phys_base) {
 	uintptr_t* mapforio_error = find_mapforio_error(phys_base);
 	if(!mapforio_error) {
@@ -79,6 +68,7 @@ int patch_amfi(char* address, uintptr_t phys_base, uintptr_t virt_base) {
 		return -1;
 	}
 	*amfi_memcmp = ret_0_gadget;
+
 	return 0;
 }
 
@@ -121,6 +111,18 @@ int patch_platform_binary(char* address, uintptr_t phys_base, uintptr_t virt_bas
 
 }
 
+int patch_entitlements(char* address, uintptr_t phys_base, uintptr_t virt_base) {
+	insn_t* cs_entitlement_flags_func = find_cs_entitlement_flags(address, phys_base, virt_base);
+	if(!cs_entitlement_flags_func) {
+		return -1;
+	}
+	cs_entitlement_flags_func[0] = MOVS_R0_C; // 0xC = get_task_allow and cs_installer entitlements.
+	cs_entitlement_flags_func[1] = BX_LR;
+
+	return 0;
+
+}
+
 int patch_sandbox(char* address, uintptr_t phys_base, uintptr_t virt_base) {
 	uintptr_t* sbops = find_sbops(phys_base, virt_base);
 	if(!sbops) {
@@ -132,200 +134,333 @@ int patch_sandbox(char* address, uintptr_t phys_base, uintptr_t virt_base) {
 		return -1;
 	}
 	if(version >= 0x00060000 && version < 0x00070000) {
-		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_file_check_mmap), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_socket_check_accept), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_socket_check_accepted), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_socket_check_bind), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_socket_check_connect), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_socket_check_create), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_socket_check_deliver), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_socket_check_kqfilter), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_socket_check_select), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_socket_check_listen), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_socket_check_received), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_socket_check_setsockopt), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_socket_check_getsockopt), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_link), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_fsgetpath), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_mount_check_label_update), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_ioctl), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_socket_label_associate_accept), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_socket_label_associate), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_socket_check_label_update), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_mount_check_remount), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_mount_check_fsctl), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_mount_check_mount), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_access), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_chroot), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_mount_check_stat), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_proc_check_get_task), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_create), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_deleteextattr), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_exchangedata), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_exec), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_getattrlist), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_getextattr), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_ioctl), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_link), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_listextattr), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_open), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_readlink), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_revoke), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_setattrlist), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_setextattr), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_setflags), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_setmode), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_setowner), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_setutimes), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_setutimes), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_stat), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_truncate), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_unlink), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_notify_create), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_fsgetpath), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_mount_check_stat), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_uipc_bind), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_vnode_check_uipc_connect), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_proc_check_setauid), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_proc_check_getauid), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_proc_check_fork), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops6, mpo_file_check_mmap), 0x4);
 	}
 	else if(version >= 0x00070000 && version < 0x00080000) {
-		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_file_check_mmap), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_socket_check_accept), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_socket_check_accepted), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_socket_check_bind), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_socket_check_connect), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_socket_check_create), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_socket_check_deliver), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_socket_check_kqfilter), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_socket_check_select), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_socket_check_listen), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_socket_check_received), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_socket_check_setsockopt), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_socket_check_getsockopt), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_link), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_fsgetpath), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_mount_check_label_update), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_ioctl), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_socket_label_associate_accept), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_socket_label_associate), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_socket_check_label_update), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_mount_check_remount), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_mount_check_fsctl), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_mount_check_mount), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_access), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_chroot), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_mount_check_stat), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_proc_check_get_task), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_create), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_deleteextattr), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_exchangedata), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_exec), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_getattrlist), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_getextattr), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_ioctl), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_link), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_listextattr), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_open), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_readlink), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_revoke), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_setattrlist), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_setextattr), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_setflags), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_setmode), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_setowner), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_setutimes), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_setutimes), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_stat), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_truncate), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_unlink), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_notify_create), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_fsgetpath), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_mount_check_stat), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_uipc_bind), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_vnode_check_uipc_connect), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_proc_check_setauid), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_proc_check_getauid), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_proc_check_fork), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops7, mpo_file_check_mmap), 0x4);
 	}
 	else if(version >= 0x00080000 && version < 0x00080100) {
-		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_file_check_mmap), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_socket_check_accept), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_socket_check_accepted), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_socket_check_bind), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_socket_check_connect), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_socket_check_create), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_socket_check_deliver), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_socket_check_kqfilter), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_socket_check_select), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_socket_check_listen), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_socket_check_received), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_socket_check_setsockopt), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_socket_check_getsockopt), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_link), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_fsgetpath), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_mount_check_label_update), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_ioctl), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_socket_label_associate_accept), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_socket_label_associate), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_socket_check_label_update), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_mount_check_remount), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_mount_check_fsctl), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_mount_check_mount), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_rename), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_access), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_chroot), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_mount_check_stat), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_proc_check_get_task), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_create), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_deleteextattr), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_exchangedata), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_exec), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_getattrlist), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_getextattr), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_ioctl), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_link), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_listextattr), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_open), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_readlink), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_revoke), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_setattrlist), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_setextattr), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_setflags), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_setmode), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_setowner), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_setutimes), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_setutimes), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_stat), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_truncate), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_unlink), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_notify_create), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_fsgetpath), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_mount_check_stat), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_uipc_bind), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_vnode_check_uipc_connect), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_proc_check_setauid), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_proc_check_getauid), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_proc_check_fork), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops80, mpo_file_check_mmap), 0x4);
 	}
 	else if(version >= 0x00080100 && version < 0x00090000) {
-		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_file_check_mmap), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_socket_check_accept), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_socket_check_accepted), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_socket_check_bind), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_socket_check_connect), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_socket_check_create), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_socket_check_deliver), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_socket_check_kqfilter), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_socket_check_select), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_socket_check_listen), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_socket_check_received), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_socket_check_setsockopt), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_socket_check_getsockopt), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_link), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_fsgetpath), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_mount_check_label_update), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_ioctl), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_socket_label_associate_accept), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_socket_label_associate), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_socket_check_label_update), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_mount_check_remount), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_mount_check_fsctl), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_mount_check_mount), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_rename), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_access), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_chroot), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_mount_check_stat), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_proc_check_get_task), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_create), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_deleteextattr), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_exchangedata), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_exec), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_getattrlist), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_getextattr), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_ioctl), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_link), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_listextattr), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_open), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_readlink), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_revoke), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_setattrlist), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_setextattr), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_setflags), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_setmode), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_setowner), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_setutimes), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_setutimes), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_stat), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_truncate), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_unlink), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_notify_create), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_fsgetpath), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_mount_check_stat), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_uipc_bind), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_vnode_check_uipc_connect), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_proc_check_setauid), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_proc_check_getauid), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_proc_check_fork), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops8, mpo_file_check_mmap), 0x4);
 	}
 	else if(version >= 0x00090000 && version < 0x00090200) {
-		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_file_check_mmap), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_socket_check_accept), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_socket_check_accepted), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_socket_check_bind), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_socket_check_connect), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_socket_check_create), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_socket_check_deliver), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_socket_check_kqfilter), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_socket_check_select), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_socket_check_listen), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_socket_check_received), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_socket_check_setsockopt), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_socket_check_getsockopt), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_link), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_fsgetpath), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_mount_check_label_update), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_ioctl), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_socket_label_associate_accept), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_socket_label_associate), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_socket_check_label_update), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_mount_check_remount), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_mount_check_fsctl), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_mount_check_mount), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_rename), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_access), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_chroot), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_mount_check_stat), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_proc_check_get_task), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_create), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_deleteextattr), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_exchangedata), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_exec), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_getattrlist), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_getextattr), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_ioctl), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_link), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_listextattr), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_open), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_readlink), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_revoke), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_setattrlist), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_setextattr), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_setflags), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_setmode), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_setowner), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_setutimes), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_setutimes), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_stat), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_truncate), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_unlink), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_notify_create), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_fsgetpath), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_mount_check_stat), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_uipc_bind), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_vnode_check_uipc_connect), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_proc_check_setauid), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_proc_check_getauid), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_proc_check_fork), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops90, mpo_file_check_mmap), 0x4);
 	}
 	else if(version >= 0x00090200 && version < 0x000A0000) {
-		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_file_check_mmap), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_socket_check_accept), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_socket_check_accepted), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_socket_check_bind), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_socket_check_connect), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_socket_check_create), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_socket_check_deliver), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_socket_check_kqfilter), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_socket_check_select), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_socket_check_listen), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_socket_check_received), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_socket_check_setsockopt), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_socket_check_getsockopt), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_link), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_fsgetpath), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_mount_check_label_update), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_ioctl), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_socket_label_associate_accept), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_socket_label_associate), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_socket_check_label_update), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_mount_check_remount), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_mount_check_fsctl), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_mount_check_mount), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_rename), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_access), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_chroot), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_mount_check_stat), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_proc_check_get_task), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_create), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_deleteextattr), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_exchangedata), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_exec), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_getattrlist), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_getextattr), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_ioctl), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_link), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_listextattr), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_open), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_readlink), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_revoke), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_setattrlist), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_setextattr), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_setflags), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_setmode), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_setowner), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_setutimes), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_setutimes), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_stat), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_truncate), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_unlink), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_notify_create), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_fsgetpath), 0x4);
-		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_mount_check_stat), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_uipc_bind), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_vnode_check_uipc_connect), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_proc_check_setauid), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_proc_check_getauid), 0x4);
 		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_proc_check_fork), 0x4);
+		bzero(sbops + offsetof(struct mac_policy_ops9, mpo_file_check_mmap), 0x4);
+
 	}
 	else {
 		return -1;

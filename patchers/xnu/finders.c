@@ -2,23 +2,6 @@
 #include "includes/finders.h"
 #include "includes/functions.h"
 
-uint32_t* find_proc_enforce(uintptr_t phys_base, uintptr_t virt_base) {
-
-	uintptr_t* proc_enforce_description = memmem((void*)phys_base, KERNEL_LEN, "Enforce MAC policy on process operations", strlen("Enforce MAC policy on process operations"));
-	if(!proc_enforce_description) {
-		return NULL;
-	}
-	uintptr_t proc_enforce_description_address = PHYS_TO_VIRT(proc_enforce_description);
-	uintptr_t* proc_enforce_description_ptr = memmem((void*)phys_base, KERNEL_LEN, &proc_enforce_description_address, sizeof(uintptr_t));
-	if(!proc_enforce_description_ptr) {
-		return NULL;
-	}
-
-	uint32_t* proc_enforce_address = (uint32_t*)(proc_enforce_description_ptr - (5 * sizeof(uint32_t)));
-
-	return (uint32_t*)VIRT_TO_PHYS(*proc_enforce_address);
-}
-
 uintptr_t* find_mapforio_error(uintptr_t phys_base) {
 	uintptr_t* mapforio_str = memmem((void*)phys_base, KERNEL_LEN, "_mapForIO", sizeof("_mapForIO"));
 	if(!mapforio_str) {
@@ -182,6 +165,7 @@ uintptr_t* find_sbops(uintptr_t phys_base, uintptr_t virt_base) {
 	return (uintptr_t*)VIRT_TO_PHYS(sbops_address);
 }
 
+
 uintptr_t find_rootvnode(char* address, uintptr_t phys_base, uintptr_t virt_base) {
 	uintptr_t rootvnode_offset = (uintptr_t)find_sym((void*)address, "_rootvnode", phys_base, virt_base);
 	if(!rootvnode_offset) {
@@ -201,4 +185,8 @@ insn_t* find_csfg_get_platform_binary(char* address, uintptr_t phys_base, uintpt
 
 insn_t* find_csproc_get_platform_binary(char* address, uintptr_t phys_base, uintptr_t virt_base) {
 	return (insn_t*)find_sym((void*)address, "_csproc_get_platform_binary", phys_base, virt_base);
+}
+
+insn_t* find_cs_entitlement_flags(char* address, uintptr_t phys_base, uintptr_t virt_base) {
+	return (insn_t*)find_sym((void*)address, "_cs_entitlement_flags", phys_base, virt_base);
 }

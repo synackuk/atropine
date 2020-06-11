@@ -178,6 +178,9 @@ int insn_mov_imm_imm(insn_t* i)
 		return 0;
 }
 
+#pragma GCC push_options
+#pragma GCC optimize ("O3")
+
 insn_t* find_literal_ref(uint8_t* kdata, size_t ksize, insn_t* insn, uintptr_t address) {
 	insn_t* current_instruction = insn;
 	uint32_t value[16];
@@ -211,6 +214,9 @@ insn_t* find_literal_ref(uint8_t* kdata, size_t ksize, insn_t* insn, uintptr_t a
 
 	return NULL;
 }
+
+#pragma GCC pop_options
+
 
 struct segment_command *find_segment(struct mach_header *mh, const char *segname) {
 	struct load_command *lc;

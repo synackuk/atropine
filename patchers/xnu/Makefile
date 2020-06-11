@@ -3,7 +3,7 @@ CC = $(CROSS)gcc
 RM = rm
 BASE_DIR = ./
 OBJECTS = finders.o functions.o kernelpatcher.o patchers.o
-CFLAGS = -Wall -W -pedantic -Wno-long-long -O3 -fpie -ffreestanding -funsigned-char -fno-strict-aliasing -std=gnu11 -fcall-used-r9 -march=armv7-a -I. -I./includes
+CFLAGS = -Wall -W -pedantic -Wno-long-long -O2 -fpie -ffreestanding -funsigned-char -fno-strict-aliasing -std=gnu11 -fcall-used-r9 -march=armv7-a -I. -I./includes
 
 
 %.o: $(BASE_DIR)%.c
